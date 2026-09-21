@@ -1,0 +1,2027 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BMW M — Motorsport Engineering & Digital Telemetry</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+    <!-- Three.js CDN for 3D Studio WebGL Stage -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <style>
+        /* ==========================================================================
+       1. BMW M DESIGN SYSTEM TOKENS (DESIGN.md Spec)
+       ========================================================================== */
+        :root {
+            /* Surface & Floor Tokens */
+            --colors-canvas: #000000;
+            --colors-surface-soft: #0d0d0d;
+            --colors-surface-card: #1a1a1a;
+            --colors-surface-elevated: #262626;
+            --colors-carbon-gray: #2b2b2b;
+
+            /* Inks & Contrast */
+            --colors-primary: #ffffff;
+            --colors-on-dark: #ffffff;
+            --colors-body: #bbbbbb;
+            --colors-body-strong: #e6e6e6;
+            --colors-muted: #7e7e7e;
+
+            /* Precision Hairlines */
+            --colors-hairline: #3c3c3c;
+            --colors-hairline-strong: #262626;
+
+            /* M Tricolor Identity Stops */
+            --colors-m-blue-light: #0066b1;
+            --colors-m-blue-dark: #1c69d4;
+            --colors-m-red: #e22718;
+
+            /* Typography Stack */
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+            /* 4px Base Spacing Scale */
+            --spacing-xxs: 4px;
+            --spacing-xs: 8px;
+            --spacing-sm: 12px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 40px;
+            --spacing-xxl: 64px;
+            --spacing-section: 96px;
+
+            /* Geometry & Motion */
+            --radius-none: 0px;
+            --radius-full: 9999px;
+            --ease-snappy: cubic-bezier(0.16, 1, 0.3, 1);
+            --duration-hover: 150ms;
+            --duration-transition: 350ms;
+        }
+
+        /* ==========================================================================
+       2. RESET & BASE RULES
+       ========================================================================== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            background-color: var(--colors-canvas);
+        }
+
+        body {
+            background-color: var(--colors-canvas);
+            color: var(--colors-body);
+            font-family: var(--font-family);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
+            line-height: 1.5;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        button {
+            font-family: inherit;
+            border: none;
+            background: none;
+            cursor: pointer;
+        }
+
+        /* Typographic Hierarchy (700 Display vs 300 Light Body) */
+        .display-xl {
+            font-size: clamp(42px, 6vw, 80px);
+            font-weight: 700;
+            line-height: 1.0;
+            letter-spacing: -0.035em;
+            text-transform: uppercase;
+            color: var(--colors-primary);
+        }
+
+        .display-lg {
+            font-size: clamp(32px, 4.5vw, 56px);
+            font-weight: 700;
+            line-height: 1.05;
+            letter-spacing: -0.025em;
+            text-transform: uppercase;
+            color: var(--colors-primary);
+        }
+
+        .display-md {
+            font-size: 32px;
+            font-weight: 700;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+            text-transform: uppercase;
+            color: var(--colors-primary);
+        }
+
+        .title-lg {
+            font-size: 20px;
+            font-weight: 700;
+            line-height: 1.3;
+            color: var(--colors-on-dark);
+            text-transform: uppercase;
+        }
+
+        .label-uppercase {
+            font-size: 13px;
+            font-weight: 700;
+            line-height: 1.3;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--colors-on-dark);
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .label-uppercase.indicator::before {
+            content: "";
+            display: inline-block;
+            width: 12px;
+            height: 2px;
+            background-color: var(--colors-m-red);
+        }
+
+        .body-md {
+            font-size: 16px;
+            font-weight: 300;
+            line-height: 1.6;
+            color: var(--colors-body-strong);
+        }
+
+        .body-sm {
+            font-size: 14px;
+            font-weight: 300;
+            line-height: 1.5;
+            color: var(--colors-body);
+        }
+
+        /* ==========================================================================
+       3. SIGNATURE ACCENTS & BUTTONS
+       ========================================================================== */
+        .m-stripe-divider {
+            height: 4px;
+            width: 100%;
+            background: linear-gradient(to right,
+                    var(--colors-m-blue-light) 0%,
+                    var(--colors-m-blue-light) 33.33%,
+                    var(--colors-m-blue-dark) 33.33%,
+                    var(--colors-m-blue-dark) 66.66%,
+                    var(--colors-m-red) 66.66%,
+                    var(--colors-m-red) 100%);
+        }
+
+        .button-primary-outline {
+            height: 48px;
+            padding: 0 32px;
+            background-color: transparent;
+            border: 1px solid var(--colors-on-dark);
+            border-radius: var(--radius-none);
+            color: var(--colors-on-dark);
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+            transition: background-color var(--duration-hover) var(--ease-snappy),
+                color var(--duration-hover) var(--ease-snappy);
+        }
+
+        .button-primary-outline:hover {
+            background-color: var(--colors-on-dark);
+            color: var(--colors-canvas);
+        }
+
+        .button-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-full);
+            background-color: var(--colors-surface-card);
+            color: var(--colors-on-dark);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--colors-hairline-strong);
+            transition: background-color var(--duration-hover) ease, transform var(--duration-hover) ease;
+        }
+
+        .button-icon:hover {
+            background-color: var(--colors-surface-elevated);
+            transform: scale(1.05);
+        }
+
+        .text-link {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--colors-on-dark);
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .text-link span {
+            transition: transform var(--duration-hover) ease;
+        }
+
+        .text-link:hover span {
+            transform: translateX(4px);
+        }
+
+        /* ==========================================================================
+       4. TOP NAVIGATION WITH EXPANDABLE MEGA-MENU
+       ========================================================================== */
+        .top-nav-wrapper {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background-color: var(--colors-canvas);
+        }
+
+        .top-nav {
+            height: 64px;
+            border-bottom: 1px solid var(--colors-hairline-strong);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 var(--spacing-xxl);
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .m-badge-logo {
+            display: inline-flex;
+            align-items: center;
+            font-weight: 700;
+            font-size: 22px;
+            color: var(--colors-on-dark);
+            letter-spacing: 0.5px;
+        }
+
+        .m-badge-stripes {
+            display: inline-flex;
+            height: 20px;
+            margin-right: 8px;
+            transform: skewX(-20deg);
+        }
+
+        .m-stripe-seg {
+            width: 5px;
+            height: 100%;
+        }
+
+        .m-stripe-seg.light-blue {
+            background-color: var(--colors-m-blue-light);
+        }
+
+        .m-stripe-seg.dark-blue {
+            background-color: var(--colors-m-blue-dark);
+        }
+
+        .m-stripe-seg.red {
+            background-color: var(--colors-m-red);
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: var(--spacing-xl);
+            list-style: none;
+            height: 100%;
+            align-items: center;
+        }
+
+        .nav-item {
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-link {
+            font-size: 14px;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+            color: var(--colors-on-dark);
+            transition: color var(--duration-hover) ease;
+            padding: 0 4px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .nav-link:hover,
+        .nav-item.active .nav-link {
+            color: var(--colors-body);
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        /* Sound Frequency Bars Indicator */
+        .sound-wave-bars {
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+            height: 16px;
+        }
+
+        .sound-bar {
+            width: 2px;
+            height: 4px;
+            background-color: var(--colors-on-dark);
+            transition: height 0.1s ease;
+        }
+
+        .sound-active .sound-bar:nth-child(1) {
+            animation: soundAnim 0.4s infinite alternate;
+        }
+
+        .sound-active .sound-bar:nth-child(2) {
+            animation: soundAnim 0.6s infinite alternate 0.1s;
+        }
+
+        .sound-active .sound-bar:nth-child(3) {
+            animation: soundAnim 0.3s infinite alternate 0.2s;
+        }
+
+        .sound-active .sound-bar:nth-child(4) {
+            animation: soundAnim 0.5s infinite alternate 0.15s;
+        }
+
+        @keyframes soundAnim {
+            0% {
+                height: 4px;
+            }
+
+            100% {
+                height: 16px;
+            }
+        }
+
+        /* Mega-Menu Overlay */
+        .mega-menu-overlay {
+            position: absolute;
+            top: 64px;
+            left: 0;
+            width: 100%;
+            background-color: var(--colors-surface-soft);
+            border-bottom: 1px solid var(--colors-hairline);
+            display: none;
+            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.95);
+            z-index: 99;
+        }
+
+        .mega-menu-overlay.open {
+            display: block;
+        }
+
+        .mega-menu-inner {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: var(--spacing-xl) var(--spacing-xxl);
+            display: grid;
+            grid-template-columns: 1fr 1fr 1.5fr;
+            gap: var(--spacing-xl);
+        }
+
+        .mega-col-title {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--colors-muted);
+            margin-bottom: var(--spacing-md);
+            display: block;
+            border-bottom: 1px solid var(--colors-hairline-strong);
+            padding-bottom: var(--spacing-xs);
+        }
+
+        .mega-link-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+
+        .mega-nav-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-xs) 0;
+            font-size: 15px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--colors-on-dark);
+            cursor: pointer;
+            transition: color var(--duration-hover) ease;
+        }
+
+        .mega-nav-item:hover {
+            color: var(--colors-body);
+        }
+
+        .mega-nav-item span {
+            font-size: 12px;
+            font-weight: 300;
+            color: var(--colors-muted);
+        }
+
+        .mega-preview-pane {
+            background-color: var(--colors-canvas);
+            border: 1px solid var(--colors-hairline-strong);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: var(--spacing-md);
+        }
+
+        .mega-preview-pane img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.6;
+            transition: opacity var(--duration-transition) ease;
+        }
+
+        .mega-preview-caption {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* ==========================================================================
+       5. HERO BAND WITH VIDEO & 4-UP TELEMETRY
+       ========================================================================== */
+        .hero-photo-band {
+            position: relative;
+            min-height: calc(100vh - 68px);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background-color: var(--colors-canvas);
+            padding: var(--spacing-xl) var(--spacing-xxl) var(--spacing-lg) var(--spacing-xxl);
+            overflow: hidden;
+        }
+
+        .hero-video-wrapper {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .hero-video-wrapper video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.55;
+            transform: scale(1.02);
+        }
+
+        .hero-video-vignette {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top,
+                    var(--colors-canvas) 0%,
+                    rgba(0, 0, 0, 0.4) 40%,
+                    rgba(0, 0, 0, 0.8) 100%);
+            z-index: 2;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 3;
+            max-width: 1440px;
+            margin: auto auto 0 auto;
+            width: 100%;
+        }
+
+        .hero-cta-group {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-lg);
+            margin-top: var(--spacing-xl);
+        }
+
+        .hero-specs-bar {
+            position: relative;
+            z-index: 3;
+            max-width: 1440px;
+            margin: var(--spacing-xl) auto 0 auto;
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1px;
+            background-color: var(--colors-hairline);
+            border: 1px solid var(--colors-hairline);
+        }
+
+        .spec-cell {
+            background-color: var(--colors-surface-soft);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-none);
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xxs);
+        }
+
+        .spec-value {
+            font-size: 32px;
+            font-weight: 700;
+            line-height: 1.15;
+            color: var(--colors-on-dark);
+            text-transform: uppercase;
+            font-feature-settings: "tnum";
+        }
+
+        .spec-label {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--colors-muted);
+        }
+
+        /* ==========================================================================
+       6. INTERACTIVE 360° 3D STUDIO CONFIGURATOR STAGE
+       ========================================================================== */
+        .section-container {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: var(--spacing-section) var(--spacing-xxl);
+        }
+
+        .section-header {
+            margin-bottom: var(--spacing-xl);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .configurator-matrix {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: var(--spacing-xl);
+            background-color: var(--colors-surface-card);
+            border: 1px solid var(--colors-hairline);
+            padding: var(--spacing-xl);
+        }
+
+        .configurator-stage {
+            position: relative;
+            width: 100%;
+            height: 480px;
+            background-color: var(--colors-canvas);
+            border: 1px solid var(--colors-hairline-strong);
+            overflow: hidden;
+            cursor: grab;
+        }
+
+        .configurator-stage:active {
+            cursor: grabbing;
+        }
+
+        .stage-overlay-hint {
+            position: absolute;
+            top: var(--spacing-md);
+            right: var(--spacing-md);
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--colors-muted);
+            pointer-events: none;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 4px 8px;
+            border: 1px solid var(--colors-hairline-strong);
+        }
+
+        .configurator-controls {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: var(--spacing-lg);
+        }
+
+        .swatch-group-label {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--colors-muted);
+            margin-bottom: var(--spacing-sm);
+            display: block;
+        }
+
+        .paint-swatches {
+            display: flex;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .swatch-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-full);
+            border: 2px solid transparent;
+            padding: 2px;
+            transition: border-color var(--duration-hover) ease, transform var(--duration-hover) ease;
+        }
+
+        .swatch-btn.active {
+            border-color: var(--colors-on-dark);
+            transform: scale(1.1);
+        }
+
+        .swatch-color {
+            width: 100%;
+            height: 100%;
+            border-radius: var(--radius-full);
+        }
+
+        .package-toggle-btn {
+            width: 100%;
+            background-color: var(--colors-surface-soft);
+            border: 1px solid var(--colors-hairline-strong);
+            padding: var(--spacing-md);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--colors-on-dark);
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background-color var(--duration-hover) ease;
+        }
+
+        .package-toggle-btn:hover {
+            background-color: var(--colors-surface-elevated);
+        }
+
+        .package-toggle-btn.active {
+            border-left: 4px solid var(--colors-m-red);
+            background-color: var(--colors-surface-elevated);
+        }
+
+        .live-pricing-card {
+            background-color: var(--colors-surface-soft);
+            border: 1px solid var(--colors-hairline-strong);
+            padding: var(--spacing-lg);
+            margin-top: auto;
+        }
+
+        /* ==========================================================================
+       7. SIDE-BY-SIDE TELEMETRY COMPARATOR MATRIX
+       ========================================================================== */
+        .comparator-wrapper {
+            background-color: var(--colors-surface-card);
+            border: 1px solid var(--colors-hairline);
+            padding: var(--spacing-xl);
+        }
+
+        .comparator-selectors {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+            border-bottom: 1px solid var(--colors-hairline);
+            padding-bottom: var(--spacing-lg);
+        }
+
+        .comparator-select-box {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+
+        .m-select {
+            height: 48px;
+            background-color: var(--colors-surface-soft);
+            color: var(--colors-on-dark);
+            border: 1px solid var(--colors-hairline-strong);
+            padding: 0 var(--spacing-md);
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .comparator-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .comparator-table th,
+        .comparator-table td {
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-bottom: 1px solid var(--colors-hairline-strong);
+            font-size: 14px;
+        }
+
+        .comparator-table th {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--colors-muted);
+            width: 25%;
+        }
+
+        .comparator-table td {
+            font-weight: 700;
+            color: var(--colors-on-dark);
+            text-transform: uppercase;
+            width: 37.5%;
+        }
+
+        .comparator-table tr:hover td {
+            background-color: var(--colors-surface-elevated);
+        }
+
+        /* ==========================================================================
+       8. EDITORIAL MAGAZINE & CATEGORY FILTERING
+       ========================================================================== */
+        .category-tabs {
+            display: flex;
+            gap: var(--spacing-xl);
+            border-bottom: 1px solid var(--colors-hairline);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .category-tab {
+            background: transparent;
+            color: var(--colors-body);
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: var(--spacing-sm) 0;
+            position: relative;
+            cursor: pointer;
+            transition: color var(--duration-hover) ease;
+        }
+
+        .category-tab.active {
+            color: var(--colors-on-dark);
+        }
+
+        .category-tab.active::after {
+            content: "";
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: var(--colors-on-dark);
+        }
+
+        .card-grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--spacing-lg);
+        }
+
+        .feature-photo-card {
+            background-color: var(--colors-surface-card);
+            border: 1px solid var(--colors-hairline-strong);
+            border-radius: var(--radius-none);
+            padding: var(--spacing-lg);
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+            transition: transform var(--duration-hover) ease, border-color var(--duration-hover) ease;
+        }
+
+        .feature-photo-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--colors-hairline);
+        }
+
+        .feature-card-media {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background-color: var(--colors-surface-soft);
+            overflow: hidden;
+        }
+
+        .feature-card-media img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        .feature-photo-card:hover .feature-card-media img {
+            transform: scale(1.03);
+        }
+
+        /* ==========================================================================
+       9. FULL BLEED PRE-FOOTER CTA (cta-band-photo)
+       ========================================================================== */
+        .cta-band-photo {
+            position: relative;
+            padding: 120px var(--spacing-xxl);
+            background-color: var(--colors-canvas);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .cta-band-photo .cta-bg {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.85)),
+                url('https://images.unsplash.com/photo-1617814076367-b759c7d7e738?q=80&w=2000&auto=format&fit=crop') center/cover no-repeat;
+        }
+
+        .cta-band-content {
+            position: relative;
+            z-index: 2;
+            max-width: 720px;
+        }
+
+        /* ==========================================================================
+       10. CHATBOT LAUNCHER & CONCIERGE DRAWER
+       ========================================================================== */
+        .chatbot-launcher-trigger {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 90;
+            height: 48px;
+            padding: 0 var(--spacing-lg);
+            background-color: var(--colors-surface-card);
+            border: 1px solid var(--colors-hairline);
+            border-radius: var(--radius-full);
+            color: var(--colors-on-dark);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            cursor: pointer;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+            transition: background-color var(--duration-hover) ease;
+        }
+
+        .chatbot-launcher-trigger:hover {
+            background-color: var(--colors-surface-elevated);
+        }
+
+        .chatbot-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: var(--radius-full);
+            background-color: var(--colors-m-red);
+        }
+
+        .chatbot-drawer {
+            position: fixed;
+            bottom: 84px;
+            right: 24px;
+            width: 380px;
+            background-color: var(--colors-surface-card);
+            border: 1px solid var(--colors-hairline);
+            border-radius: var(--radius-none);
+            z-index: 95;
+            display: none;
+            flex-direction: column;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.9);
+        }
+
+        .chatbot-drawer.open {
+            display: flex;
+        }
+
+        .chatbot-header {
+            padding: var(--spacing-md);
+            background-color: var(--colors-surface-soft);
+            border-bottom: 1px solid var(--colors-hairline);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chatbot-body {
+            padding: var(--spacing-md);
+            height: 280px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+        }
+
+        .chat-msg {
+            font-size: 13px;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--radius-none);
+            max-width: 85%;
+            line-height: 1.4;
+        }
+
+        .chat-msg.bot {
+            background-color: var(--colors-surface-elevated);
+            color: var(--colors-body-strong);
+            align-self: flex-start;
+            border-left: 2px solid var(--colors-m-blue-light);
+        }
+
+        .chat-msg.user {
+            background-color: var(--colors-surface-soft);
+            color: var(--colors-on-dark);
+            border: 1px solid var(--colors-hairline);
+            align-self: flex-end;
+        }
+
+        .chatbot-input-row {
+            display: flex;
+            border-top: 1px solid var(--colors-hairline);
+        }
+
+        .text-input {
+            flex: 1;
+            height: 48px;
+            background-color: var(--colors-surface-soft);
+            border: none;
+            padding: 0 var(--spacing-md);
+            color: var(--colors-on-dark);
+            font-size: 13px;
+            outline: none;
+        }
+
+        .chatbot-send-btn {
+            height: 48px;
+            padding: 0 var(--spacing-md);
+            background-color: var(--colors-surface-elevated);
+            color: var(--colors-on-dark);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border: none;
+        }
+
+        /* ==========================================================================
+       11. COOKIE CONSENT BANNER (cookie-consent-card)
+       ========================================================================== */
+        .cookie-consent-card {
+            position: fixed;
+            bottom: 24px;
+            left: 24px;
+            width: 360px;
+            background-color: var(--colors-canvas);
+            border: 1px solid var(--colors-hairline);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-none);
+            z-index: 90;
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.9);
+        }
+
+        .cookie-consent-card.hidden {
+            display: none;
+        }
+
+        /* ==========================================================================
+       12. GLOBAL FOOTER (footer)
+       ========================================================================== */
+        .footer {
+            background-color: var(--colors-canvas);
+            border-top: 1px solid var(--colors-hairline-strong);
+            padding: var(--spacing-xxl) var(--spacing-xxl) var(--spacing-xl) var(--spacing-xxl);
+        }
+
+        .footer-grid {
+            max-width: 1440px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--spacing-xl);
+            margin-bottom: var(--spacing-xxl);
+        }
+
+        .footer-col h4 {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--colors-on-dark);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .footer-col ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+
+        .footer-col a {
+            font-size: 14px;
+            font-weight: 300;
+            color: var(--colors-muted);
+            transition: color var(--duration-hover) ease;
+        }
+
+        .footer-col a:hover {
+            color: var(--colors-on-dark);
+        }
+
+        .footer-bottom {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding-top: var(--spacing-lg);
+            border-top: 1px solid var(--colors-hairline-strong);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: var(--colors-muted);
+        }
+
+        /* ==========================================================================
+       13. RESPONSIVE BREAKPOINTS
+       ========================================================================== */
+        @media (max-width: 1024px) {
+            .top-nav {
+                padding: 0 var(--spacing-lg);
+            }
+
+            .nav-menu {
+                display: none;
+            }
+
+            .hero-photo-band {
+                padding: var(--spacing-xl) var(--spacing-lg);
+            }
+
+            .hero-specs-bar {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .configurator-matrix {
+                grid-template-columns: 1fr;
+            }
+
+            .card-grid-3 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .footer-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .hero-specs-bar {
+                grid-template-columns: 1fr;
+            }
+
+            .comparator-selectors {
+                grid-template-columns: 1fr;
+            }
+
+            .card-grid-3 {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-cta-group {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .button-primary-outline {
+                width: 100%;
+            }
+
+            .cookie-consent-card {
+                width: calc(100vw - 32px);
+                left: 16px;
+                bottom: 16px;
+            }
+
+            .chatbot-drawer {
+                width: calc(100vw - 32px);
+                right: 16px;
+            }
+
+            .footer-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                gap: var(--spacing-sm);
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 4px Signature M Tricolor Divider -->
+    <div class="m-stripe-divider"></div>
+
+    <!-- Top Navigation with Mega-Menu Overlay -->
+    <div class="top-nav-wrapper">
+        <header class="top-nav">
+            <div class="nav-brand">
+                <div class="m-badge-logo">
+                    <div class="m-badge-stripes">
+                        <div class="m-stripe-seg light-blue"></div>
+                        <div class="m-stripe-seg dark-blue"></div>
+                        <div class="m-stripe-seg red"></div>
+                    </div>
+                    <span>M</span>
+                </div>
+            </div>
+
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item" id="nav-models-trigger">
+                        <span class="nav-link">Models ▾</span>
+                    </li>
+                    <li class="nav-item"><a href="#configurator" class="nav-link">360° Studio</a></li>
+                    <li class="nav-item"><a href="#comparator" class="nav-link">Telemetry Matrix</a></li>
+                    <li class="nav-item"><a href="#magazine" class="nav-link">Magazine</a></li>
+                    <li class="nav-item"><a href="#experience" class="nav-link">Track Days</a></li>
+                </ul>
+            </nav>
+
+            <div class="nav-actions">
+                <!-- Live Web Audio Engine Sound Acoustic Button -->
+                <button class="button-icon" id="engine-sound-toggle" aria-label="Toggle Engine Acoustics"
+                    title="Rev Engine Acoustics">
+                    <div class="sound-wave-bars">
+                        <div class="sound-bar"></div>
+                        <div class="sound-bar"></div>
+                        <div class="sound-bar"></div>
+                        <div class="sound-bar"></div>
+                    </div>
+                </button>
+
+                <button class="button-icon" aria-label="Account">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="square">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Mega-Menu Flyout Drawer -->
+        <div class="mega-menu-overlay" id="mega-menu">
+            <div class="mega-menu-inner">
+                <div>
+                    <span class="mega-col-title">High-Performance Coupés & Sedans</span>
+                    <ul class="mega-link-list">
+                        <li class="mega-nav-item"
+                            data-img="https://images.unsplash.com/photo-1555215695-3004980ad54e?q=80&w=1200&auto=format&fit=crop"
+                            data-title="BMW M4 Competition Coupé" data-spec="530 HP · 3.5s 0-100">
+                            BMW M4 Competition <span>530 HP</span>
+                        </li>
+                        <li class="mega-nav-item"
+                            data-img="https://images.unsplash.com/photo-1580273916550-e323be2ae537?q=80&w=1200&auto=format&fit=crop"
+                            data-title="BMW M3 CS Sedan" data-spec="550 HP · 3.4s 0-100">
+                            BMW M3 CS <span>550 HP</span>
+                        </li>
+                        <li class="mega-nav-item"
+                            data-img="https://images.unsplash.com/photo-1617814076367-b759c7d7e738?q=80&w=1200&auto=format&fit=crop"
+                            data-title="BMW M8 Gran Coupé" data-spec="625 HP · 3.2s 0-100">
+                            BMW M8 Gran Coupé <span>625 HP</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div>
+                    <span class="mega-col-title">M Electrified & SAVs</span>
+                    <ul class="mega-link-list">
+                        <li class="mega-nav-item"
+                            data-img="https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1200&auto=format&fit=crop"
+                            data-title="BMW XM Label Hybrid" data-spec="748 HP · M HYBRID V8">
+                            BMW XM Label <span>748 HP</span>
+                        </li>
+                        <li class="mega-nav-item"
+                            data-img="https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=80&w=1200&auto=format&fit=crop"
+                            data-title="BMW X5 M Competition" data-spec="625 HP · M xDrive">
+                            BMW X5 M Competition <span>625 HP</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="mega-preview-pane">
+                    <img id="mega-preview-img"
+                        src="https://images.unsplash.com/photo-1555215695-3004980ad54e?q=80&w=1200&auto=format&fit=crop"
+                        alt="Model Preview">
+                    <div class="mega-preview-caption">
+                        <div class="label-uppercase indicator" id="mega-preview-title">BMW M4 Competition Coupé</div>
+                        <p class="body-sm" id="mega-preview-spec"
+                            style="color: var(--colors-on-dark); margin-top: 4px;">530 HP · 3.5s 0-100</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hero Photo/Video Band -->
+    <section class="hero-photo-band">
+        <div class="hero-video-wrapper">
+            <video autoplay muted loop playsinline
+                poster="https://images.unsplash.com/photo-1580273916550-e323be2ae537?q=80&w=2000&auto=format&fit=crop">
+                <source
+                    src="https://assets.mixkit.co/videos/preview/mixkit-sports-car-drifting-on-a-racetrack-41221-large.mp4"
+                    type="video/mp4">
+            </video>
+            <div class="hero-video-vignette"></div>
+        </div>
+
+        <div class="hero-content">
+            <div class="label-uppercase indicator">BMW M Engineering Directive</div>
+            <h1 class="display-xl">Uncompromising Dynamics.</h1>
+            <p class="body-md" style="max-width: 620px; margin-top: var(--spacing-sm);">
+                Honed on the Nürburgring Nordschleife. High-revving M TwinPower Turbo inline 6-cylinder powerplant
+                translating pure GT3 endurance racing telemetry directly to asphalt.
+            </p>
+
+            <div class="hero-cta-group">
+                <button class="button-primary-outline" onclick="triggerEngineRev()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                    Acoustic Rev Test
+                </button>
+                <a href="#configurator" class="text-link">Launch 360° Studio <span>→</span></a>
+            </div>
+        </div>
+
+        <!-- 4-Up Live Spec Counter Cells -->
+        <div class="hero-specs-bar">
+            <div class="spec-cell">
+                <div class="spec-value">530 HP</div>
+                <div class="spec-label">Power Output</div>
+            </div>
+            <div class="spec-cell">
+                <div class="spec-value">3.5 s</div>
+                <div class="spec-label">0–100 km/h</div>
+            </div>
+            <div class="spec-cell">
+                <div class="spec-value">650 Nm</div>
+                <div class="spec-label">Peak Torque</div>
+            </div>
+            <div class="spec-cell">
+                <div class="spec-value">290 km/h</div>
+                <div class="spec-label">Top Speed (M Driver's)</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive 360° 3D Studio Configurator Stage -->
+    <section id="configurator" class="section-container">
+        <div class="section-header">
+            <div>
+                <div class="label-uppercase indicator">Interactive Engineering</div>
+                <h2 class="display-lg">360° Studio Stage</h2>
+            </div>
+            <span class="label-uppercase" style="color: var(--colors-muted);">Real-Time Physical Clearcoat
+                Shaders</span>
+        </div>
+
+        <div class="configurator-matrix">
+            <!-- Three.js Canvas Stage -->
+            <div class="configurator-stage" id="webgl-stage">
+                <div class="stage-overlay-hint">Click & Drag to Rotate 360°</div>
+            </div>
+
+            <!-- Live Configurator Controller Panel -->
+            <div class="configurator-controls">
+                <div>
+                    <span class="swatch-group-label">M Individual Exterior Paint</span>
+                    <div class="paint-swatches">
+                        <button class="swatch-btn active" data-color="#004C3F" data-name="Isle of Man Green"
+                            title="Isle of Man Green">
+                            <div class="swatch-color" style="background-color: #004C3F;"></div>
+                        </button>
+                        <button class="swatch-btn" data-color="#0C2340" data-name="Frozen Portimao Blue"
+                            title="Frozen Portimao Blue">
+                            <div class="swatch-color" style="background-color: #0C2340;"></div>
+                        </button>
+                        <button class="swatch-btn" data-color="#A6192E" data-name="Toronto Red" title="Toronto Red">
+                            <div class="swatch-color" style="background-color: #A6192E;"></div>
+                        </button>
+                        <button class="swatch-btn" data-color="#E8E8E8" data-name="Alpine White" title="Alpine White">
+                            <div class="swatch-color" style="background-color: #E8E8E8;"></div>
+                        </button>
+                        <button class="swatch-btn" data-color="#111111" data-name="Black Sapphire Metallic"
+                            title="Black Sapphire Metallic">
+                            <div class="swatch-color" style="background-color: #111111;"></div>
+                        </button>
+                    </div>
+
+                    <span class="swatch-group-label">Motorsport Aerodynamic Packages</span>
+                    <div style="display: flex; flex-direction: column; gap: var(--spacing-xs);">
+                        <button class="package-toggle-btn active" id="carbon-pkg-toggle">
+                            <span>M Carbon Exterior Pack</span>
+                            <span style="font-size: 12px; color: var(--colors-muted);">-14 KG</span>
+                        </button>
+                        <button class="package-toggle-btn" id="ceramic-brake-toggle">
+                            <span>M Carbon Ceramic Brakes</span>
+                            <span style="font-size: 12px; color: var(--colors-muted);">TRACK FIA</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Dynamic Spec Recalculator -->
+                <div class="live-pricing-card">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: var(--spacing-xs);">
+                        <span class="label-uppercase" id="selected-paint-label">Isle of Man Green</span>
+                        <span class="label-uppercase" id="selected-weight-label">1,725 KG</span>
+                    </div>
+                    <div class="display-md" id="calc-price" style="font-size: 28px;">$94,200</div>
+                    <button class="button-primary-outline" style="width: 100%; margin-top: var(--spacing-md);">Reserve
+                        Build Slot</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4px M Stripe Divider -->
+    <div class="m-stripe-divider"></div>
+
+    <!-- Dynamic Side-by-Side Telemetry Comparator -->
+    <section id="comparator" class="section-container">
+        <div class="section-header">
+            <div>
+                <div class="label-uppercase indicator">Telemetry Matrix</div>
+                <h2 class="display-lg">Compare Dynamics</h2>
+            </div>
+            <span class="label-uppercase" style="color: var(--colors-muted);">Side-by-Side Engineering Data</span>
+        </div>
+
+        <div class="comparator-wrapper">
+            <div class="comparator-selectors">
+                <div class="comparator-select-box">
+                    <label class="spec-label">Primary Benchmark</label>
+                    <select class="m-select" id="comp-select-a">
+                        <option value="m4" selected>BMW M4 Competition Coupé</option>
+                        <option value="m3cs">BMW M3 CS Sedan</option>
+                        <option value="m8">BMW M8 Gran Coupé</option>
+                        <option value="xm">BMW XM Label Hybrid</option>
+                    </select>
+                </div>
+                <div class="comparator-select-box">
+                    <label class="spec-label">Challenger Benchmark</label>
+                    <select class="m-select" id="comp-select-b">
+                        <option value="m4">BMW M4 Competition Coupé</option>
+                        <option value="m3cs" selected>BMW M3 CS Sedan</option>
+                        <option value="m8">BMW M8 Gran Coupé</option>
+                        <option value="xm">BMW XM Label Hybrid</option>
+                    </select>
+                </div>
+            </div>
+
+            <table class="comparator-table">
+                <tbody>
+                    <tr>
+                        <th>Engine Architecture</th>
+                        <td id="comp-a-engine">3.0L S58 TwinPower Turbo</td>
+                        <td id="comp-b-engine">3.0L S58 Track Calibrated</td>
+                    </tr>
+                    <tr>
+                        <th>Power Output</th>
+                        <td id="comp-a-power">530 HP @ 6,250 RPM</td>
+                        <td id="comp-b-power">550 HP @ 6,250 RPM</td>
+                    </tr>
+                    <tr>
+                        <th>0–100 km/h (Launch)</th>
+                        <td id="comp-a-acc">3.5 s</td>
+                        <td id="comp-b-acc">3.4 s</td>
+                    </tr>
+                    <tr>
+                        <th>Drivetrain / Transmission</th>
+                        <td id="comp-a-drive">M xDrive / 8-Speed Steptronic</td>
+                        <td id="comp-b-drive">M xDrive / Active Rear Diff</td>
+                    </tr>
+                    <tr>
+                        <th>Chassis Roof Weight</th>
+                        <td id="comp-a-roof">Carbon-Fiber Reinforced (CFRP)</td>
+                        <td id="comp-b-roof">Carbon-Fiber Reinforced (CFRP)</td>
+                    </tr>
+                    <tr>
+                        <th>Base Currency (MSRP)</th>
+                        <td id="comp-a-price">$83,200</td>
+                        <td id="comp-b-price">$118,700</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Editorial Magazine with Category Filtering -->
+    <section id="magazine" class="section-container">
+        <div class="section-header">
+            <div>
+                <div class="label-uppercase indicator">Editorial & Heritage</div>
+                <h2 class="display-lg">M Magazine</h2>
+            </div>
+        </div>
+
+        <div class="category-tabs">
+            <button class="category-tab active" data-filter="all">All Disciplines</button>
+            <button class="category-tab" data-filter="motorsport">Motorsport</button>
+            <button class="category-tab" data-filter="engineering">Engineering</button>
+        </div>
+
+        <div class="card-grid-3">
+            <div class="feature-photo-card" data-cat="motorsport">
+                <div class="feature-card-media">
+                    <img src="https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=80&w=800&auto=format&fit=crop"
+                        alt="Daytona Endurance Racing">
+                </div>
+                <div class="label-uppercase">Motorsport // Endurance</div>
+                <h3 class="title-lg">24 Hours of Daytona</h3>
+                <p class="body-sm">
+                    How live hybrid prototype telemetry algorithms secured the GTP podium in mixed rain conditions.
+                </p>
+                <a href="#" class="text-link">Read Full Telemetry <span>→</span></a>
+            </div>
+
+            <div class="feature-photo-card" data-cat="engineering">
+                <div class="feature-card-media">
+                    <img src="https://images.unsplash.com/photo-1617788138017-80ad40651399?q=80&w=800&auto=format&fit=crop"
+                        alt="Carbon Ceramic Tech">
+                </div>
+                <div class="label-uppercase">Engineering // Dynamics</div>
+                <h3 class="title-lg">Carbon Ceramic Brake Tech</h3>
+                <p class="body-sm">
+                    Shedding unsprung rotating mass for surgical corner entry under extreme thermal deceleration load.
+                </p>
+                <a href="#" class="text-link">View Analysis <span>→</span></a>
+            </div>
+
+            <div class="feature-photo-card" data-cat="engineering">
+                <div class="feature-card-media">
+                    <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=800&auto=format&fit=crop"
+                        alt="Aerodynamics CFD">
+                </div>
+                <div class="label-uppercase">Aerodynamics // CFD</div>
+                <h3 class="title-lg">Venturi Underbody Downforce</h3>
+                <p class="body-sm">
+                    Channeling high-velocity ground airflow to balance straight-line top speed with high-G cornering
+                    grip.
+                </p>
+                <a href="#" class="text-link">View CFD Report <span>→</span></a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Full Bleed Track Experience CTA Band -->
+    <section id="experience" class="cta-band-photo">
+        <div class="cta-bg"></div>
+        <div class="cta-band-content">
+            <div class="label-uppercase indicator" style="justify-content: center;">FIA Certified Instruction</div>
+            <h2 class="display-lg" style="margin: var(--spacing-sm) 0 var(--spacing-md) 0;">M Track Days</h2>
+            <p class="body-md" style="margin-bottom: var(--spacing-xl);">
+                Take full telemetry control of the M4 Competition across certified international circuits under direct
+                guidance from BMW factory racing drivers.
+            </p>
+            <button class="button-primary-outline">Book FIA Track Pass</button>
+        </div>
+    </section>
+
+    <!-- Interactive M Concierge Launcher -->
+    <button class="chatbot-launcher-trigger" id="chat-toggle" aria-label="Toggle Telemetry Concierge">
+        <div class="chatbot-indicator"></div>
+        <span class="label-uppercase" style="color: var(--colors-on-dark);">M Concierge</span>
+    </button>
+
+    <div class="chatbot-drawer" id="chat-drawer">
+        <div class="chatbot-header">
+            <div class="label-uppercase" style="margin-bottom: 0;">BMW M Telemetry Assistant</div>
+            <button id="chat-close" style="color: var(--colors-muted); font-size: 16px;">✕</button>
+        </div>
+        <div class="chatbot-body" id="chat-history">
+            <div class="chat-msg bot">
+                Welcome to BMW M Telemetry. Inquire about vehicle specs, custom studio paint options, or track day
+                reservations.
+            </div>
+        </div>
+        <form class="chatbot-input-row" id="chat-form">
+            <input type="text" class="text-input" id="chat-input"
+                placeholder="Ask about S58 engine, 0-100 times, M3 CS..." autocomplete="off">
+            <button type="submit" class="chatbot-send-btn">Send</button>
+        </form>
+    </div>
+
+    <!-- Cookie Consent Component -->
+    <div class="cookie-consent-card" id="cookie-card">
+        <div class="label-uppercase indicator">Telemetry & Analytics</div>
+        <p class="body-sm">
+            We utilize essential cookies and dynamic telemetry tokens to power the 360° Studio renderer and acoustic
+            modules.
+        </p>
+        <div style="display: flex; gap: var(--spacing-sm);">
+            <button class="button-primary-outline" style="height: 38px; font-size: 11px; padding: 0 16px;"
+                id="accept-cookies">Accept</button>
+            <button class="text-link" style="font-size: 11px;" id="dismiss-cookies">Decline</button>
+        </div>
+    </div>
+
+    <!-- Global 4-Column Footer -->
+    <footer class="footer">
+        <div class="footer-grid">
+            <div class="footer-col">
+                <h4>M Power Models</h4>
+                <ul>
+                    <li><a href="#">M2 Coupé</a></li>
+                    <li><a href="#">M3 CS Sedan</a></li>
+                    <li><a href="#">M4 Competition</a></li>
+                    <li><a href="#">M8 Gran Coupé</a></li>
+                    <li><a href="#">BMW XM Label</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Motorsport</h4>
+                <ul>
+                    <li><a href="#">BMW M Hybrid V8 (LMDh)</a></li>
+                    <li><a href="#">M4 GT3 Customer Racing</a></li>
+                    <li><a href="#">M Driving Experience</a></li>
+                    <li><a href="#">FIA Sim Racing Series</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Technology</h4>
+                <ul>
+                    <li><a href="#">S58 TwinPower Turbo</a></li>
+                    <li><a href="#">M xDrive Architecture</a></li>
+                    <li><a href="#">Carbon Composite Chassis</a></li>
+                    <li><a href="#">M Track Telemetry App</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>BMW Group</h4>
+                <ul>
+                    <li><a href="#">BMW M GmbH Portal</a></li>
+                    <li><a href="#">Press Club Global</a></li>
+                    <li><a href="#">Motorsport Careers</a></li>
+                    <li><a href="#">Contact Engineering</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div>© 2026 BMW M GmbH. Engineered for performance. All rights reserved.</div>
+            <div>Privacy Policy · Legal Notice · Telemetry Settings</div>
+        </div>
+    </footer>
+
+    <!-- ==========================================================================
+       14. INTERACTIVE SCRIPTS & RUNTIME ENGINES
+       ========================================================================== */
+  -->
+    <script>
+        /* --------------------------------------------------------------------------
+           A. Navigation Mega-Menu Interactive Flyout
+           -------------------------------------------------------------------------- */
+        const modelsTrigger = document.getElementById('nav-models-trigger');
+        const megaMenu = document.getElementById('mega-menu');
+        const megaItems = document.querySelectorAll('.mega-nav-item');
+        const megaPreviewImg = document.getElementById('mega-preview-img');
+        const megaPreviewTitle = document.getElementById('mega-preview-title');
+        const megaPreviewSpec = document.getElementById('mega-preview-spec');
+
+        modelsTrigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            megaMenu.classList.toggle('open');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!megaMenu.contains(e.target) && !modelsTrigger.contains(e.target)) {
+                megaMenu.classList.remove('open');
+            }
+        });
+
+        megaItems.forEach(item => {
+            item.addEventListener('mouseenter', () => {
+                const img = item.getAttribute('data-img');
+                const title = item.getAttribute('data-title');
+                const spec = item.getAttribute('data-spec');
+
+                megaPreviewImg.style.opacity = '0.2';
+                setTimeout(() => {
+                    megaPreviewImg.src = img;
+                    megaPreviewTitle.textContent = title;
+                    megaPreviewSpec.textContent = spec;
+                    megaPreviewImg.style.opacity = '0.6';
+                }, 120);
+            });
+        });
+
+        /* --------------------------------------------------------------------------
+           B. Web Audio API Acoustic Engine (Harmonic Rev Synthesizer)
+           -------------------------------------------------------------------------- */
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function triggerEngineRev() {
+            initAudio();
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            const now = audioCtx.currentTime;
+            const soundBtn = document.getElementById('engine-sound-toggle');
+            soundBtn.classList.add('sound-active');
+
+            const masterGain = audioCtx.createGain();
+            masterGain.gain.setValueAtTime(0.001, now);
+            masterGain.gain.exponentialRampToValueAtTime(0.35, now + 0.15);
+            masterGain.gain.exponentialRampToValueAtTime(0.001, now + 1.8);
+            masterGain.connect(audioCtx.destination);
+
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(160, now);
+            filter.frequency.exponentialRampToValueAtTime(2800, now + 0.6);
+            filter.frequency.exponentialRampToValueAtTime(220, now + 1.8);
+            filter.connect(masterGain);
+
+            const osc1 = audioCtx.createOscillator();
+            const osc2 = audioCtx.createOscillator();
+            const osc3 = audioCtx.createOscillator();
+
+            osc1.type = 'sawtooth';
+            osc2.type = 'triangle';
+            osc3.type = 'sawtooth';
+
+            [osc1, osc2, osc3].forEach((osc, idx) => {
+                const detuneOffset = (idx - 1) * 7;
+                osc.frequency.setValueAtTime(65 + detuneOffset, now);
+                osc.frequency.exponentialRampToValueAtTime(360 + detuneOffset, now + 0.55);
+                osc.frequency.exponentialRampToValueAtTime(70 + detuneOffset, now + 1.7);
+                osc.connect(filter);
+                osc.start(now);
+                osc.stop(now + 1.85);
+            });
+
+            setTimeout(() => {
+                soundBtn.classList.remove('sound-active');
+            }, 1850);
+        }
+
+        document.getElementById('engine-sound-toggle').addEventListener('click', triggerEngineRev);
+
+        /* --------------------------------------------------------------------------
+           C. Three.js 360° Studio Configurator with Physical Clearcoat Shaders
+           -------------------------------------------------------------------------- */
+        let scene, camera, renderer, carGroup;
+        const stageContainer = document.getElementById('webgl-stage');
+
+        function init3DStudio() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x000000);
+
+            camera = new THREE.PerspectiveCamera(40, stageContainer.clientWidth / stageContainer.clientHeight, 0.1, 1000);
+            camera.position.set(0, 2.2, 5.8);
+            camera.lookAt(0, 0.4, 0);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(stageContainer.clientWidth, stageContainer.clientHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            stageContainer.appendChild(renderer.domElement);
+
+            // Studio Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+            scene.add(ambientLight);
+
+            const keyLight = new THREE.DirectionalLight(0xffffff, 1.4);
+            keyLight.position.set(5, 8, 5);
+            scene.add(keyLight);
+
+            const rimLight = new THREE.DirectionalLight(0x1c69d4, 1.2);
+            rimLight.position.set(-5, 4, -5);
+            scene.add(rimLight);
+
+            // Grid Floor
+            const groundGrid = new THREE.GridHelper(20, 40, 0x3c3c3c, 0x1a1a1a);
+            groundGrid.position.y = -0.01;
+            scene.add(groundGrid);
+
+            carGroup = new THREE.Group();
+
+            // Clearcoat Lacquer Body Material
+            const bodyMat = new THREE.MeshPhysicalMaterial({
+                color: new THREE.Color(0x004C3F), // Isle of Man Green
+                metalness: 0.9,
+                roughness: 0.18,
+                clearcoat: 1.0,
+                clearcoatRoughness: 0.05
+            });
+
+            // Procedural Body Chassis
+            const chassis = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.5, 4.2), bodyMat);
+            chassis.position.y = 0.5;
+            carGroup.add(chassis);
+
+            // Cabin Glass
+            const cabinMat = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: 0.05, metalness: 0.95 });
+            const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.45, 2.2), cabinMat);
+            cabin.position.set(0, 0.88, -0.2);
+            carGroup.add(cabin);
+
+            // Carbon Roof
+            const roofMat = new THREE.MeshStandardMaterial({ color: 0x181818, roughness: 0.5, metalness: 0.5 });
+            const roof = new THREE.Mesh(new THREE.BoxGeometry(1.58, 0.05, 2.15), roofMat);
+            roof.position.set(0, 1.12, -0.2);
+            carGroup.add(roof);
+
+            // Laser Light Clusters
+            const lightMat = new THREE.MeshBasicMaterial({ color: 0x00d4ff });
+            const lightL = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.08, 0.1), lightMat);
+            lightL.position.set(0.7, 0.52, 2.11);
+            const lightR = lightL.clone();
+            lightR.position.x = -0.7;
+            carGroup.add(lightL, lightR);
+
+            // M Wheels
+            const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.8 });
+            const wheelGeo = new THREE.CylinderGeometry(0.38, 0.38, 0.25, 24);
+            wheelGeo.rotateZ(Math.PI / 2);
+
+            [
+                [0.95, 0.38, 1.3],
+                [-0.95, 0.38, 1.3],
+                [0.95, 0.38, -1.3],
+                [-0.95, 0.38, -1.3]
+            ].forEach(pos => {
+                const wheel = new THREE.Mesh(wheelGeo, wheelMat);
+                wheel.position.set(...pos);
+                carGroup.add(wheel);
+            });
+
+            scene.add(carGroup);
+
+            function animate() {
+                requestAnimationFrame(animate);
+                if (!isDragging) {
+                    carGroup.rotation.y += 0.0025;
+                }
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            window.addEventListener('resize', () => {
+                camera.aspect = stageContainer.clientWidth / stageContainer.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(stageContainer.clientWidth, stageContainer.clientHeight);
+            });
+        }
+
+        let isDragging = false;
+        let prevMouseX = 0;
+
+        stageContainer.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            prevMouseX = e.clientX;
+        });
+
+        window.addEventListener('mouseup', () => { isDragging = false; });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging || !carGroup) return;
+            const deltaX = e.clientX - prevMouseX;
+            carGroup.rotation.y += deltaX * 0.008;
+            prevMouseX = e.clientX;
+        });
+
+        init3DStudio();
+
+        /* --------------------------------------------------------------------------
+           D. Live Paint Swatches & Spec Recalculator Engine
+           -------------------------------------------------------------------------- */
+        let basePrice = 94200;
+        let baseWeight = 1725;
+        let hasCarbon = true;
+        let hasCeramic = false;
+
+        const swatchBtns = document.querySelectorAll('.swatch-btn');
+        const paintLabel = document.getElementById('selected-paint-label');
+        const weightLabel = document.getElementById('selected-weight-label');
+        const priceLabel = document.getElementById('calc-price');
+
+        swatchBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                swatchBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                const hexStr = btn.getAttribute('data-color');
+                const nameStr = btn.getAttribute('data-name');
+                paintLabel.textContent = nameStr;
+
+                if (carGroup) {
+                    carGroup.children[0].material.color.set(hexStr);
+                }
+            });
+        });
+
+        function updatePricing() {
+            let finalPrice = basePrice;
+            let finalWeight = baseWeight;
+
+            if (hasCarbon) {
+                finalPrice += 4500;
+                finalWeight -= 14;
+            }
+            if (hasCeramic) {
+                finalPrice += 8500;
+                finalWeight -= 16;
+            }
+
+            priceLabel.textContent = `$${finalPrice.toLocaleString()}`;
+            weightLabel.textContent = `${finalWeight.toLocaleString()} KG`;
+        }
+
+        const carbonToggle = document.getElementById('carbon-pkg-toggle');
+        carbonToggle.addEventListener('click', () => {
+            hasCarbon = !hasCarbon;
+            carbonToggle.classList.toggle('active', hasCarbon);
+            updatePricing();
+        });
+
+        const ceramicToggle = document.getElementById('ceramic-brake-toggle');
+        ceramicToggle.addEventListener('click', () => {
+            hasCeramic = !hasCeramic;
+            ceramicToggle.classList.toggle('active', hasCeramic);
+            updatePricing();
+        });
+
+        updatePricing();
+
+        /* --------------------------------------------------------------------------
+           E. Side-by-Side Dynamic Telemetry Comparator Engine
+           -------------------------------------------------------------------------- */
+        const comparisonModels = {
+            m4: {
+                engine: "3.0L S58 TwinPower Turbo",
+                power: "530 HP @ 6,250 RPM",
+                acc: "3.5 s",
+                drive: "M xDrive / 8-Speed Steptronic",
+                roof: "Carbon-Fiber Reinforced (CFRP)",
+                price: "$83,200"
+            },
+            m3cs: {
+                engine: "3.0L S58 Track Calibrated",
+                power: "550 HP @ 6,250 RPM",
+                acc: "3.4 s",
+                drive: "M xDrive / Active Rear Diff",
+                roof: "Carbon-Fiber Reinforced (CFRP)",
+                price: "$118,700"
+            },
+            m8: {
+                engine: "4.4L S63 V8 TwinPower Turbo",
+                power: "625 HP @ 6,000 RPM",
+                acc: "3.2 s",
+                drive: "M xDrive with 2WD Track Mode",
+                roof: "Carbon-Fiber Reinforced (CFRP)",
+                price: "$138,800"
+            },
+            xm: {
+                engine: "4.4L V8 M HYBRID Electric",
+                power: "748 HP System Output",
+                acc: "3.8 s",
+                drive: "M xDrive Electric Vectoring",
+                roof: "Illuminated 3D Prism Headliner",
+                price: "$185,000"
+            }
+        };
+
+        const selectA = document.getElementById('comp-select-a');
+        const selectB = document.getElementById('comp-select-b');
+
+        function updateComparator() {
+            const dataA = comparisonModels[selectA.value];
+            const dataB = comparisonModels[selectB.value];
+
+            document.getElementById('comp-a-engine').textContent = dataA.engine;
+            document.getElementById('comp-a-power').textContent = dataA.power;
+            document.getElementById('comp-a-acc').textContent = dataA.acc;
+            document.getElementById('comp-a-drive').textContent = dataA.drive;
+            document.getElementById('comp-a-roof').textContent = dataA.roof;
+            document.getElementById('comp-a-price').textContent = dataA.price;
+
+            document.getElementById('comp-b-engine').textContent = dataB.engine;
+            document.getElementById('comp-b-power').textContent = dataB.power;
+            document.getElementById('comp-b-acc').textContent = dataB.acc;
+            document.getElementById('comp-b-drive').textContent = dataB.drive;
+            document.getElementById('comp-b-roof').textContent = dataB.roof;
+            document.getElementById('comp-b-price').textContent = dataB.price;
+        }
+
+        selectA.addEventListener('change', updateComparator);
+        selectB.addEventListener('change', updateComparator);
+
+        /* --------------------------------------------------------------------------
+           F. Magazine Filter Tabs
+           -------------------------------------------------------------------------- */
+        const catTabs = document.querySelectorAll('.category-tab');
+        const featCards = document.querySelectorAll('.feature-photo-card');
+
+        catTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                catTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                const filter = tab.getAttribute('data-filter');
+                featCards.forEach(card => {
+                    if (filter === 'all' || card.getAttribute('data-cat') === filter) {
+                        card.style.display = 'flex';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        });
+
+        /* --------------------------------------------------------------------------
+           G. Concierge Chatbot Widget
+           -------------------------------------------------------------------------- */
+        const chatToggle = document.getElementById('chat-toggle');
+        const chatDrawer = document.getElementById('chat-drawer');
+        const chatClose = document.getElementById('chat-close');
+        const chatForm = document.getElementById('chat-form');
+        const chatInput = document.getElementById('chat-input');
+        const chatHistory = document.getElementById('chat-history');
+
+        chatToggle.addEventListener('click', () => chatDrawer.classList.toggle('open'));
+        chatClose.addEventListener('click', () => chatDrawer.classList.remove('open'));
+
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const query = chatInput.value.trim();
+            if (!query) return;
+
+            const userMsg = document.createElement('div');
+            userMsg.className = 'chat-msg user';
+            userMsg.textContent = query;
+            chatHistory.appendChild(userMsg);
+            chatInput.value = '';
+
+            setTimeout(() => {
+                const botMsg = document.createElement('div');
+                botMsg.className = 'chat-msg bot';
+                botMsg.textContent = `Telemetry response for "${query}": Engineering parameters verified. S58 twin-scroll architecture maintains 1.3 bar peak boost.`;
+                chatHistory.appendChild(botMsg);
+                chatHistory.scrollTop = chatHistory.scrollHeight;
+            }, 400);
+
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        });
+
+        /* --------------------------------------------------------------------------
+           H. Cookie Consent Dismissal
+           -------------------------------------------------------------------------- */
+        const cookieCard = document.getElementById('cookie-card');
+        document.getElementById('accept-cookies').addEventListener('click', () => cookieCard.classList.add('hidden'));
+        document.getElementById('dismiss-cookies').addEventListener('click', () => cookieCard.classList.add('hidden'));
+    </script>
+</body>
+
+</html>
